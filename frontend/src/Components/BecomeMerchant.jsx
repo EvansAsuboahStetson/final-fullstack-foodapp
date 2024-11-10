@@ -11,8 +11,6 @@ const BecomeMerchant = () => {
  
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    
     
     setRegistered(true);
   };
