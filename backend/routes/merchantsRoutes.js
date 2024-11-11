@@ -136,5 +136,24 @@ router.delete('/unregister', authenticate(['Merchant']), async (req, res) => {
     }
 });
 
+// Protected route to get merchant's profile
+router.get('/profile', authenticate(['Merchant']), async (req, res) => {
+    try {
+        // Get the merchant ID from the authenticated user (req.user)
+        const merchantId = req.user.id;
+
+        // Find the merchant by ID
+        const merchant = await Merchant.findById(merchantId).select('-password'); // Exclude password field
+        if (!merchant) {
+            return res.status(404).json({ message: 'Merchant not found' });
+        }
+
+        res.status(200).json({ message: 'Merchant profile retrieved successfully', data: merchant });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: 'Error retrieving merchant profile' });
+    }
+});
+
 
 module.exports = router;

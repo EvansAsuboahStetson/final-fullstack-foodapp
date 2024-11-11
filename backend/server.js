@@ -27,7 +27,7 @@ app.use('/user', UserRoutes);
 app.use('/restaurant', restaurantRoutes);
 app.use('/menu', menuRoutes);
 app.use('/merchant', merchantRoutes);
-app.use('/orders', orderRoutes);
+app.use('/order', orderRoutes);
 app.use('/cart', CartRoutes);
 
 const connectDB = async () => {

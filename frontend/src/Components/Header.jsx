@@ -8,8 +8,8 @@ const Header = () => {
   const [isSignInPopupOpen, setSignInPopupOpen] = useState(false);
   const [isSignUpPopupOpen, setSignUpPopupOpen] = useState(false);
   const [isForgotPasswordPopupOpen, setForgotPasswordPopupOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('User'); // Add state to track selected role
   const { userInfo, login, logout } = useAuth(); // Access userInfo, login, and logout from context
-
   const navigate = useNavigate();
 
   const toggleSignInPopup = () => {
@@ -28,14 +28,19 @@ const Header = () => {
     setSignUpPopupOpen(false);
   };
 
+  const handleRoleChange = (e) => {
+    setSelectedRole(e.target.value); // Update selected role
+  };
+
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
 
     const email = e.target.email.value;
     const password = e.target.password.value;
+    const endpoint = selectedRole === 'Merchant' ? 'merchant/login' : 'user/login'; // Set endpoint based on role
 
     try {
-      const response = await fetch('http://localhost:4000/user/login', {
+      const response = await fetch(`http://localhost:4000/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -44,7 +49,13 @@ const Header = () => {
       if (response.ok) {
         const data = await response.json();
         login(data.token); // Use login from context to save token
-        navigate('/home-page');
+        
+        // Navigate based on role
+        if (selectedRole === 'Merchant') {
+          navigate('/merchanthome'); // Redirect to MerchantHome
+        } else {
+          navigate('/home-page'); // Redirect to HomePage
+        }
       } else {
         console.error("Sign In Failed");
       }
@@ -54,6 +65,7 @@ const Header = () => {
 
     toggleSignInPopup();
   };
+  
 
   const handleSignUpSubmit = async (e) => {
     e.preventDefault();
@@ -102,20 +114,16 @@ const Header = () => {
         </div>
         <nav>
           <ul className="nav-links">
-  
-              <>
-                <li>
-                  <a href="#signIn" className="sign-in-btn" onClick={toggleSignInPopup}>
-                    Sign In
-                  </a>
-                </li>
-                <li>
-                  <a href="#createAccount" className="sign-up-btn" onClick={toggleSignUpPopup}>
-                    Create Account
-                  </a>
-                </li>
-              </>
-            
+            <li>
+              <a href="#signIn" className="sign-in-btn" onClick={toggleSignInPopup}>
+                Sign In
+              </a>
+            </li>
+            <li>
+              <a href="#createAccount" className="sign-up-btn" onClick={toggleSignUpPopup}>
+                Create Account
+              </a>
+            </li>
           </ul>
         </nav>
       </header>
@@ -132,10 +140,32 @@ const Header = () => {
                 <label htmlFor="email">Email:</label>
                 <input type="text" id="email" name="email" required />
               </div>
-
               <div className="form-group">
                 <label htmlFor="password">Password:</label>
                 <input type="password" id="password" name="password" required />
+              </div>
+              
+              {/* Role Selection */}
+              <div className="form-group">
+                <label>Role:</label>
+                <input
+                  type="radio"
+                  id="userRole"
+                  name="role"
+                  value="User"
+                  checked={selectedRole === 'User'}
+                  onChange={handleRoleChange}
+                />
+                <label htmlFor="userRole">User</label>
+                <input
+                  type="radio"
+                  id="merchantRole"
+                  name="role"
+                  value="Merchant"
+                  checked={selectedRole === 'Merchant'}
+                  onChange={handleRoleChange}
+                />
+                <label htmlFor="merchantRole">Merchant</label>
               </div>
 
               <button type="submit" className="submit-btn">Submit</button>
@@ -150,7 +180,7 @@ const Header = () => {
         </div>
       )}
 
-      {isSignUpPopupOpen && (
+{isSignUpPopupOpen && (
         <div className="popup">
           <div className="popup-content">
             <span className="close" onClick={toggleSignUpPopup}>&times;</span>
