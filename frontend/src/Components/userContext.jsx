@@ -18,13 +18,15 @@ export const AuthProvider = ({ children }) => {
         return null;
     });
 
-    // Fetch full user profile from the server
+    // Fetch full user profile from the server, with endpoint based on role
     const fetchUserProfile = async () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const decoded = jwtDecode(token); // Decode token for role
-                const response = await fetch('http://localhost:4000/user/profile', {
+                const decoded = jwtDecode(token); // Decode token to get role
+                const endpoint = decoded.role === 'Merchant' ? 'merchant/profile' : 'user/profile'; // Dynamic endpoint
+                
+                const response = await fetch(`http://localhost:4000/${endpoint}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -35,7 +37,7 @@ export const AuthProvider = ({ children }) => {
                 if (response.ok) {
                     const data = await response.json();
                     console.log("Fetched User Profile:", data.data);
-                    
+
                     // Merge profile data with role
                     setUserInfo({
                         ...data.data,

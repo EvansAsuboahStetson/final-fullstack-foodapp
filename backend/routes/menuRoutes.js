@@ -3,6 +3,9 @@ const router = express.Router();
 const Menu = require("../models/menu");
 const Merchant = require("../models/merchants");
 
+const Order = require('../models/order');
+
+
 // Ensure you have access to the Merchant model for validations
 
 const authenticate = require("../middlewares/authMiddleWares");
@@ -38,6 +41,27 @@ router.post("/create", authenticate(['Merchant']), async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error creating menu item" });
+    }
+});
+
+router.get('/most-ordered', authenticate(['Merchant']), async (req, res) => {
+    try {
+        
+        // Aggregate orders to count menu item frequency
+        const mostOrderedItems = await Order.aggregate([
+            { $unwind: "$items" },
+            { $group: { _id: "$items.menu_item_id", count: { $sum: "$items.quantity" } } },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+        ]);
+
+        // Populate the menu item details
+        const mostOrderedFoods = await Menu.find({ _id: { $in: mostOrderedItems.map(item => item._id) } });
+        
+        res.status(200).json({ message: 'Most ordered foods retrieved successfully', data: mostOrderedFoods });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving most ordered foods' });
     }
 });
 
@@ -154,6 +178,11 @@ router.delete("/:id", authenticate(['Merchant']), async (req, res) => {
         res.status(500).json({ message: "Error deleting menu item" });
     }
 });
+
+
+// Most ordered foods
+
+
 
 
 module.exports = router;

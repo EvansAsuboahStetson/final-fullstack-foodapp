@@ -8,7 +8,7 @@ const authenticate = require('../middlewares/authMiddleWares'); // Import the au
 router.post('/create', authenticate(['User']), async (req, res) => {
     const { merchant_id, items } = req.body;
     console.log("This is merchant_id", merchant_id);
-    
+
     const user_id = req.user.id; // Authenticated user’s ID
 
     try {
@@ -57,6 +57,7 @@ router.get('/user-orders', authenticate(['User']), async (req, res) => {
 // Get all orders for a merchant
 router.get('/merchant-orders', authenticate(['Merchant']), async (req, res) => {
     const merchant_id = req.user.id;
+    console.log("This is merchant_id here ", merchant_id);
 
     try {
         const orders = await Order.find({ merchant_id }).populate('user_id items.menu_item_id');
