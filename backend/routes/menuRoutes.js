@@ -109,8 +109,8 @@ router.get('/categories-and-merchants', authenticate(['User', 'Merchant']), asyn
 
 
 // Read all menu items for a specific merchant
-router.get("/merchant/:merchantId", authenticate(['User','Merchant']), async (req, res) => {
-  const { merchantId } = req.params;
+router.get("/merchant/merchantId", authenticate(['User','Merchant']), async (req, res) => {
+  const  merchantId  = req.user.id;
 
   try {
     const menuItems = await Menu.find({ merchant_id: merchantId });

@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import '../Styles/Menu.css';
-import { FaPlus } from 'react-icons/fa';
-import FoodCard from './FoodCard'; // Import FoodCard component
+import React, { useState, useEffect } from "react";
+import "../Styles/Menu.css";
+import { FaPlus } from "react-icons/fa";
+import FoodCard from "./FoodCard"; // Import FoodCard component
 
 const Menu = () => {
   const [showAddFoodPopup, setShowAddFoodPopup] = useState(false);
   const [foodData, setFoodData] = useState({
-    item_name: '',
-    description: '',
-    price: '',
-    category: '',
+    item_name: "",
+    description: "",
+    price: "",
+    category: "",
     available: false,
   });
   const [foods, setFoods] = useState([]); // State to hold fetched foods
@@ -20,19 +20,22 @@ const Menu = () => {
 
   const fetchAvailableFoods = async () => {
     try {
-      const response = await fetch('http://localhost:4000/menu/most-ordered', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const response = await fetch(
+        "http://localhost:4000/menu/merchant/merchantId",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       const data = await response.json();
       if (response.ok) {
         setFoods(data.data);
       } else {
-        console.error('Failed to fetch food items:', data.message);
+        console.error("Failed to fetch food items:", data.message);
       }
     } catch (error) {
-      console.error('Error fetching food items:', error);
+      console.error("Error fetching food items:", error);
     }
   };
 
@@ -48,48 +51,47 @@ const Menu = () => {
     const { name, value, type, checked } = e.target;
     setFoodData({
       ...foodData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
   const handleAddFoodSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:4000/menu/create', {
-        method: 'POST',
+      const response = await fetch("http://localhost:4000/menu/create", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(foodData),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
-        console.log('Food item added successfully:', data);
+        console.log("Food item added successfully:", data);
         setShowAddFoodPopup(false);
         fetchAvailableFoods(); // Refresh the list after adding a new item
       } else {
-        console.error('Failed to add food item');
+        console.error("Failed to add food item");
       }
     } catch (error) {
-      console.error('Error adding food item:', error);
+      console.error("Error adding food item:", error);
     }
   };
 
   return (
     <div className="menu-page">
       <div className="menu-header">
-        <input 
-          type="text" 
-          placeholder="Search for food..." 
-          className="search-input" 
+        <input
+          type="text"
+          placeholder="Search for food..."
+          className="search-input"
         />
         <FaPlus className="add-food-icon" onClick={handleAddFoodClick} />
       </div>
-
       <div className="food-list">
-        {foods.map(food => (
+        {foods.map((food) => (
           <FoodCard key={food._id} food={food} onEdit={() => {}} /> // Pass props to FoodCard
         ))}
       </div>
@@ -99,31 +101,31 @@ const Menu = () => {
           <div className="popup-content">
             <h3>Add New Food</h3>
             <form onSubmit={handleAddFoodSubmit}>
-              <input 
-                type="text" 
-                name="item_name" 
-                placeholder="Food Name" 
+              <input
+                type="text"
+                name="item_name"
+                placeholder="Food Name"
                 value={foodData.item_name}
                 onChange={handleChange}
-                required 
+                required
               />
-              <textarea 
-                name="description" 
-                placeholder="Description" 
+              <textarea
+                name="description"
+                placeholder="Description"
                 value={foodData.description}
                 onChange={handleChange}
-                required 
+                required
               />
-              <input 
-                type="number" 
-                name="price" 
-                placeholder="Price" 
+              <input
+                type="number"
+                name="price"
+                placeholder="Price"
                 value={foodData.price}
                 onChange={handleChange}
-                required 
+                required
               />
-              <select 
-                name="category" 
+              <select
+                name="category"
                 value={foodData.category}
                 onChange={handleChange}
                 required
@@ -137,17 +139,25 @@ const Menu = () => {
               </select>
               <div className="availability-container">
                 <label htmlFor="availability">Availability</label>
-                <input 
-                  type="checkbox" 
-                  name="available" 
+                <input
+                  type="checkbox"
+                  name="available"
                   id="availability"
                   checked={foodData.available}
-                  onChange={handleChange} 
-                /> 
+                  onChange={handleChange}
+                />
               </div>
               <div className="popup-buttons">
-                <button type="submit" className="add-food-button">Add Food</button>
-                <button type="button" className="cancel-button" onClick={handleClosePopup}>Cancel</button>
+                <button type="submit" className="add-food-button">
+                  Add Food
+                </button>
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={handleClosePopup}
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
