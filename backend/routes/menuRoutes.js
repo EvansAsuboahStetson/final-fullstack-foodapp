@@ -66,6 +66,48 @@ router.get('/most-ordered', authenticate(['Merchant']), async (req, res) => {
 });
 
 
+router.get('/categories-and-merchants', authenticate(['User', 'Merchant']), async (req, res) => {
+    try {
+        const categoriesWithMerchants = await Menu.aggregate([
+            {
+                $group: {
+                    _id: "$category", // Group by category
+                    merchantIds: { $addToSet: "$merchant_id" }, // Collect unique merchant IDs for each category
+                },
+            },
+            {
+                $lookup: {
+                    from: "merchants", // Name of the Merchant collection
+                    localField: "merchantIds",
+                    foreignField: "_id",
+                    as: "merchants", // Populate merchant details
+                },
+            },
+            {
+                $project: {
+                    _id: 0, // Exclude the default `_id` field
+                    category: "$_id", // Rename `_id` to `category`
+                    merchants: { _id: 1, name: 1 }, // Include only relevant fields from Merchant
+                },
+            },
+        ]);
+
+        if (categoriesWithMerchants.length === 0) {
+            return res.status(404).json({ message: "No categories or merchants found" });
+        }
+
+        res.status(200).json({
+            message: "Categories and associated merchants retrieved successfully",
+            data: categoriesWithMerchants,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error retrieving categories and merchants" });
+    }
+});
+
+
+
 // Read all menu items for a specific merchant
 router.get("/merchant/:merchantId", authenticate(['User','Merchant']), async (req, res) => {
   const { merchantId } = req.params;
@@ -178,9 +220,6 @@ router.delete("/:id", authenticate(['Merchant']), async (req, res) => {
         res.status(500).json({ message: "Error deleting menu item" });
     }
 });
-
-
-// Most ordered foods
 
 
 
