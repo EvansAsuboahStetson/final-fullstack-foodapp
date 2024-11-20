@@ -125,3 +125,15 @@ button[type="submit"]:hover {
   text-decoration: none;
   font-weight: bold;
 }
+
+.error-message {
+  color: #d9534f; /* Red color for error */
+  background-color: #f8d7da; /* Light red background */
+  border: 1px solid #f5c6cb; /* Border for emphasis */
+  padding: 0.75rem; /* Padding for better readability */
+  border-radius: 5px; /* Rounded corners */
+  font-weight: bold; /* Bold text */
+  margin-bottom: 1rem; /* Space below the message */
+  width: 100%; /* Full width */
+  text-align: center; /* Center text */
+}

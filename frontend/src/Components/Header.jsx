@@ -1,35 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './userContext'; // Import useAuth from AuthContext
+import { useAuth } from './userContext';
 import '../Styles/header.css';
 import HeroSection from './Herosection';
+import LoginPopup from './LoginPopUp';
 
 const Header = () => {
   const [isSignInPopupOpen, setSignInPopupOpen] = useState(false);
-  const [isSignUpPopupOpen, setSignUpPopupOpen] = useState(false);
-  const [isForgotPasswordPopupOpen, setForgotPasswordPopupOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('User'); // Add state to track selected role
-  const { userInfo, login, logout } = useAuth(); // Access userInfo, login, and logout from context
+  const [selectedRole, setSelectedRole] = useState('User');
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const [err, setErr] = useState('');
 
   const toggleSignInPopup = () => {
     setSignInPopupOpen(!isSignInPopupOpen);
-    setSignUpPopupOpen(false);
-  };
-
-  const toggleSignUpPopup = () => {
-    setSignUpPopupOpen(!isSignUpPopupOpen);
-    setSignInPopupOpen(false);
-  };
-
-  const toggleForgotPasswordPopup = () => {
-    setForgotPasswordPopupOpen(!isForgotPasswordPopupOpen);
-    setSignInPopupOpen(false);
-    setSignUpPopupOpen(false);
   };
 
   const handleRoleChange = (e) => {
-    setSelectedRole(e.target.value); // Update selected role
+    setSelectedRole(e.target.value);
   };
 
   const handleSignInSubmit = async (e) => {
@@ -37,7 +25,7 @@ const Header = () => {
 
     const email = e.target.email.value;
     const password = e.target.password.value;
-    const endpoint = selectedRole === 'Merchant' ? 'merchant/login' : 'user/login'; // Set endpoint based on role
+    const endpoint = selectedRole === 'Merchant' ? 'merchant/login' : 'user/login';
 
     try {
       const response = await fetch(`http://localhost:4000/${endpoint}`, {
@@ -48,64 +36,27 @@ const Header = () => {
 
       if (response.ok) {
         const data = await response.json();
-        login(data.token); // Use login from context to save token
+        login(data.token);
         
         // Navigate based on role
         if (selectedRole === 'Merchant') {
-          navigate('/merchanthome'); // Redirect to MerchantHome
+          toggleSignInPopup();
+          navigate('/merchanthome');
         } else {
-          navigate('/home-page'); // Redirect to HomePage
+          toggleSignInPopup();
+          navigate('/home-page');
         }
       } else {
         console.error("Sign In Failed");
+        setErr('Login failed. Please try again.');
       }
     } catch (error) {
-      console.error("Error during sign-in:", error);
+      console.log("Error during sign-in:", error);
+      setErr('Login failed. Please try again.');
     }
 
-    toggleSignInPopup();
+
   };
-  
-
-  const handleSignUpSubmit = async (e) => {
-    e.preventDefault();
-
-    const name = e.target.name.value;
-    const email = e.target.email.value;
-    const password = e.target.password.value;
-    const confirmPassword = e.target.confirmPassword.value;
-
-    try {
-      const response = await fetch('http://localhost:4000/user/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, confirmPassword }),
-      });
-
-      if (response.ok) {
-        console.log("Sign Up Successful");
-        navigate('/home-page');
-      } else {
-        console.error("Sign Up Failed");
-      }
-    } catch (error) {
-      console.error("Error during sign-up:", error);
-    }
-
-    toggleSignUpPopup();
-  };
-
-  const handleLogout = () => {
-    logout(); // Use logout from context to clear authentication
-    navigate('/');
-  };
-
-  const handleForgotPasswordSubmit = (e) => {
-    e.preventDefault();
-    toggleForgotPasswordPopup();
-    toggleSignInPopup();
-  };
-
   return (
     <>
       <header className="header">
@@ -120,7 +71,7 @@ const Header = () => {
               </a>
             </li>
             <li>
-              <a href="#createAccount" className="sign-up-btn" onClick={toggleSignUpPopup}>
+              <a href="#createAccount" className="sign-up-btn" onClick={() => {}}>
                 Create Account
               </a>
             </li>
@@ -130,96 +81,16 @@ const Header = () => {
 
       <HeroSection toggleSignInPopup={toggleSignInPopup} />
 
-      {isSignInPopupOpen && (
-        <div className="popup">
-          <div className="popup-content">
-            <span className="close" onClick={toggleSignInPopup}>&times;</span>
-            <h2>Sign In</h2>
-            <form id="signInForm" onSubmit={handleSignInSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">Email:</label>
-                <input type="text" id="email" name="email" required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="password">Password:</label>
-                <input type="password" id="password" name="password" required />
-              </div>
-              
-              {/* Role Selection */}
-              <div className="form-group">
-                <label>Role:</label>
-                <input
-                  type="radio"
-                  id="userRole"
-                  name="role"
-                  value="User"
-                  checked={selectedRole === 'User'}
-                  onChange={handleRoleChange}
-                />
-                <label htmlFor="userRole">User</label>
-                <input
-                  type="radio"
-                  id="merchantRole"
-                  name="role"
-                  value="Merchant"
-                  checked={selectedRole === 'Merchant'}
-                  onChange={handleRoleChange}
-                />
-                <label htmlFor="merchantRole">Merchant</label>
-              </div>
-
-              <button type="submit" className="submit-btn">Submit</button>
-            </form>
-            <p>
-              <a href="#forgotPassword" className="forgot-password-link" onClick={toggleForgotPasswordPopup}>Forgot Password?</a>
-            </p>
-            <p>
-              Don't have an account? <a href="#createAccount" className="create-account-link" onClick={toggleSignUpPopup}>Create Account</a>
-            </p>
-          </div>
-        </div>
-      )}
-
-{isSignUpPopupOpen && (
-        <div className="popup">
-          <div className="popup-content">
-            <span className="close" onClick={toggleSignUpPopup}>&times;</span>
-            <h2>Create Account</h2>
-            <form id="signUpForm" onSubmit={handleSignUpSubmit}>
-              <label htmlFor="name">Username:</label>
-              <input type="text" id="name" name="name" required />
-
-              <label htmlFor="email">Email:</label>
-              <input type="email" id="email" name="email" required />
-
-              <label htmlFor="password">Password:</label>
-              <input type="password" id="password" name="password" required />
-
-              <label htmlFor="confirmPassword">Confirm Password:</label>
-              <input type="password" id="confirmPassword" name="confirmPassword" required />
-
-              <button type="submit">Submit</button>
-            </form>
-            <p>
-              Already have an account? <a href="#signIn" className="sign-in-link" onClick={toggleSignInPopup}>Sign In</a>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {isForgotPasswordPopupOpen && (
-        <div className="popup">
-          <div className="popup-content">
-            <span className="close" onClick={toggleForgotPasswordPopup}>&times;</span>
-            <h2>Forgot Password</h2>
-            <form id="forgotPasswordForm" onSubmit={handleForgotPasswordSubmit}>
-              <label htmlFor="email">Email:</label>
-              <input type="email" id="email" required />
-              <button type="submit">Submit</button>
-            </form>
-          </div>
-        </div>
-      )}
+      <LoginPopup
+        isVisible={isSignInPopupOpen}
+        onClose={toggleSignInPopup}
+        onSubmit={handleSignInSubmit}
+        selectedRole={selectedRole}
+        handleRoleChange={handleRoleChange}
+        toggleForgotPasswordPopup={() => {}}
+        toggleSignUpPopup={() => {}}
+        errorMessage={err}
+      />
     </>
   );
 };

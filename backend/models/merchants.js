@@ -20,7 +20,7 @@ const MerchantSchema = new mongoose.Schema({
     },
     store_type: {
         type: String,
-        enum: ['Restaurant', 'Grocery', 'Bakery', 'Cafe', 'Other'], // Adjust based on possible store types
+        enum: ['Asian', 'Mexican', 'African', 'Italian'], // Adjust based on possible store types
         required: true,
     },
     created_at: {
